@@ -15,9 +15,15 @@ router.post("", async(req, res)=>{
 //get the event data
 router.get("", async(req,res)=>{
     try {
-        
-        const events=await Event.find().lean().exec();
-        return res.status(200).send(events); 
+
+      const page=+req.query.page || 1;
+      const size=+req.query.size || 10;
+
+      const skip= (page-1)*size;
+      
+        const events=await Event.find().skip(skip).limit(size).lean().exec();
+        const totalPages=Math.ceil((await Event.find().countDocuments())/size);
+        return res.status(200).send({events, totalPages}); 
     } catch (error) {
         return res.status(500).send(error.message);
     }
